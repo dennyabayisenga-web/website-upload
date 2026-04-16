@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="rw">
+<head>
+<meta charset="UTF-8">
+<title>Agasobanuye Premium</title>
+
+<style>
+body{margin:0;background:#000;color:#fff;font-family:Arial}
+.header{padding:15px;background:#111;font-weight:bold}
+.menu{display:flex;justify-content:space-around;background:#111;padding:10px}
+.menu button{background:none;color:#fff;border:none}
+.container{padding:15px}
+.film{background:#1a1a1a;margin:8px 0;padding:10px;border-radius:8px}
+button{padding:6px;margin-top:5px;border:none;border-radius:5px}
+.play{background:red;color:#fff}
+.download{background:green;color:#fff}
+.pay{background:gold}
+.login{background:#38bdf8}
+video{width:100%;margin-top:15px}
+#chatBox{background:#111;height:150px;overflow:auto;padding:10px}
+</style>
+</head>
+
+<body>
+
+<div class="header">🎬 Agasobanuye Premium</div>
+
+<div class="menu">
+  <button onclick="showPage('home')">🏠 Home</button>
+  <button onclick="showPage('ai')">🤖 AI</button>
+  <button onclick="showPage('settings')">⚙️ Settings</button>
+</div>
+
+<div class="container">
+
+<!-- LOGIN -->
+<h3>👤 Login</h3>
+<input id="email" placeholder="Email"><br><br>
+<input id="password" type="password" placeholder="Password"><br><br>
+<button class="login" onclick="register()">Register</button>
+<button class="login" onclick="login()">Login</button>
+
+<!-- HOME -->
+<div id="homePage">
+
+<div class="film">
+<h3>💳 Payment</h3>
+<p>0790800165 / 0783115761</p>
+
+<button class="pay" onclick="pay(500,7,false)">500 Frw Week</button>
+<button class="pay" onclick="pay(1000,7,true)">1000 Frw Week + Download</button>
+<button class="pay" onclick="pay(1500,30,false)">1500 Frw Month</button>
+<button class="pay" onclick="pay(2000,30,true)">2000 Frw Month + Download</button>
+</div>
+
+<div id="movies"></div>
+
+<video id="player" controls></video>
+
+</div>
+
+<!-- AI -->
+<div id="aiPage" style="display:none;">
+<h3>🤖 AI Chat</h3>
+<div id="chatBox"></div>
+<input id="chatInput">
+<button onclick="sendMessage()">Send</button>
+</div>
+
+<!-- SETTINGS -->
+<div id="settingsPage" style="display:none;">
+<button onclick="logout()">Logout</button>
+</div>
+
+</div>
+
+<script>
+
+// 🔐 OWNER (HIDDEN SYSTEM)
+const ownerEmail="dennyabayisenga@gmail.com";
+
+// encode password (hidden)
+const hiddenPass="QGRhbm55YWFh"; // base64 ya @dannyaaa
+
+function decode(x){ return atob(x); }
+
+// DATA
+const allData=[
+{name:"Guardians",type:"main",total:40},
+{name:"Veil",type:"veil",total:18},
+{name:"Love & Sword",type:"love",total:40},
+{name:"Whisper",type:"whisper",total:40},
+{name:"Lotus",type:"lotus",total:40},
+{name:"Female General",type:"female",total:40}
+];
+
+const movies=document.getElementById("movies");
+const player=document.getElementById("player");
+
+let access=false;
+let canDownload=false;
+let expiry=null;
+
+// 🔁 LOAD SAVED ACCESS
+if(localStorage.getItem("access")){
+  access=true;
+  canDownload = localStorage.getItem("download")==="true";
+  expiry=new Date(localStorage.getItem("expiry"));
+}
+
+// MENU
+function showPage(p){
+  homePage.style.display="none";
+  aiPage.style.display="none";
+  settingsPage.style.display="none";
+
+  if(p==="home")homePage.style.display="block";
+  if(p==="ai")aiPage.style.display="block";
+  if(p==="settings")settingsPage.style.display="block";
+}
+
+// CREATE MOVIES
+allData.forEach(s=>{
+  for(let ep=1;ep<=s.total;ep++){
+    movies.innerHTML+=`
+    <div class="film">
+    ${s.name} Ep ${ep}
+    <button class="play" onclick="playFilm(${ep},'${s.type}')">▶️ Play</button>
+    <button class="download" onclick="download(${ep},'${s.type}')">📥 Download</button>
+    </div>`;
+  }
+});
+
+// REGISTER
+function register(){
+  localStorage.setItem("user",email.value);
+  localStorage.setItem("pass",password.value);
+  alert("Account yako yakozwe");
+}
+
+// LOGIN
+function login(){
+  const user=email.value;
+  const pass=password.value;
+
+  // 🔥 OWNER LOGIN (hidden)
+  if(user===ownerEmail && pass===decode(hiddenPass)){
+    access=true;
+    canDownload=true;
+    expiry=new Date(2099,0,1);
+
+    localStorage.setItem("access",true);
+    localStorage.setItem("download",true);
+    localStorage.setItem("expiry",expiry);
+
+    alert("Owner Login ✔️");
+    return;
+  }
+
+  // USER LOGIN
+  if(user===localStorage.getItem("user") &&
+     pass===localStorage.getItem("pass")){
+
+    access=true;
+    canDownload=false;
+    expiry=new Date(Date.now()+1*24*60*60*1000);
+
+    localStorage.setItem("access",true);
+    localStorage.setItem("download",false);
+    localStorage.setItem("expiry",expiry);
+
+    alert("Login success");
+  }else{
+    alert("Wrong account");
+  }
+}
+
+// LOGOUT
+function logout(){
+  access=false;
+  localStorage.clear();
+  alert("Wasohotse");
+}
+
+// PAYMENT
+function pay(amount,days,download){
+  alert("Ohereza "+amount+" Frw kuri 0790800165 cyangwa 0783115761");
+
+  access=true;
+  canDownload=download;
+  expiry=new Date(Date.now()+days*24*60*60*1000);
+
+  localStorage.setItem("access",true);
+  localStorage.setItem("download",download);
+  localStorage.setItem("expiry",expiry);
+
+  alert("Access kugeza: "+expiry.toDateString());
+}
+
+// PATH
+function getPath(type){
+  if(type==="veil") return "videos/veil/ep";
+  if(type==="love") return "videos/love/ep";
+  if(type==="whisper") return "videos/whisper/ep";
+  if(type==="lotus") return "videos/lotus/ep";
+  if(type==="female") return "videos/female/ep";
+  return "videos/ep";
+}
+
+// PLAY
+function playFilm(ep,type){
+  if(access && new Date()<expiry){
+    player.src=getPath(type)+ep+".mp4";
+    player.play();
+  }else{
+    alert("Banza wishyure cyangwa login");
+  }
+}
+
+// DOWNLOAD
+function download(ep,type){
+  if(access && canDownload && new Date()<expiry){
+    window.location.href=getPath(type)+ep+".mp4";
+  }else{
+    alert("Download yemerewe kuri plan ya 1000/2000 gusa");
+  }
+}
+
+// AI
+function sendMessage(){
+  let msg=chatInput.value;
+  chatBox.innerHTML+="<p>You: "+msg+"</p>";
+  chatBox.innerHTML+="<p>AI: Muraho neza 👋</p>";
+  chatInput.value="";
+}
+
+</script>
+
+</body>
+</html>
